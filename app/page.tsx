@@ -29,8 +29,21 @@ const router = useRouter();
 
   async function cargarDispositivos() {
     try {
-      const respuesta = await fetch("/api/dispositivos");
-      const datos = await respuesta.json();
+      const { data: sessionData } = await supabase.auth.getSession();
+const token = sessionData.session?.access_token;
+
+if (!token) {
+  router.push("/login");
+  return;
+}
+
+const respuesta = await fetch("/api/dispositivos", {
+  headers: {
+    Authorization: `Bearer ${token}`,
+  },
+});
+
+const datos = await respuesta.json();
 
       setDispositivos(datos);
     } catch (error) {

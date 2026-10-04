@@ -1,19 +1,52 @@
 import { NextResponse } from "next/server";
 import { supabase } from "../../../lib/supabase";
 
-export async function GET() {
-  const { data, error } = await supabase
-    .from("dispositivos")
-    .select("*");
+export async function GET(request: Request) {
+  try {
+    // Obtener el token enviado por el usuario autenticado
+    const authorization = request.headers.get("authorization");
 
-  if (error) {
+    if (!authorization?.startsWith("Bearer ")) {
+      return NextResponse.json(
+        { error: "No autorizado. Se requiere autenticación." },
+        { status: 401 }
+      );
+    }
+
+    const token = authorization.substring(7);
+
+    // Validar el token con Supabase
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser(token);
+
+    if (authError || !user) {
+      return NextResponse.json(
+        { error: "Sesión inválida o expirada." },
+        { status: 401 }
+      );
+    }
+
+    // Solo después de autenticar se consulta el inventario
+    const { data, error } = await supabase
+      .from("dispositivos")
+      .select("*");
+
+    if (error) {
+      return NextResponse.json(
+        { error: "No se pudieron obtener los dispositivos." },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json(data);
+  } catch {
     return NextResponse.json(
-      { error: error.message },
+      { error: "Error interno del servidor." },
       { status: 500 }
     );
   }
-
-  return NextResponse.json(data);
 }
 export async function POST(request: Request) {
   try {
