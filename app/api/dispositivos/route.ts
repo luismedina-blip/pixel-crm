@@ -30,7 +30,45 @@ export async function POST(request: Request) {
   precio_venta,
   condicion,
 } = body;
+// Validación de seguridad de los datos recibidos
+if (
+  !imei ||
+  !marca ||
+  !modelo ||
+  !almacenamiento ||
+  !color ||
+  !estado ||
+  !condicion
+) {
+  return NextResponse.json(
+    { error: "Todos los campos obligatorios deben ser completados." },
+    { status: 400 }
+  );
+}
 
+// Validar formato del IMEI: únicamente números y máximo 15 dígitos
+if (!/^\d{1,15}$/.test(String(imei))) {
+  return NextResponse.json(
+    { error: "El IMEI debe contener únicamente números y máximo 15 dígitos." },
+    { status: 400 }
+  );
+}
+
+// Validar precios
+const compra = Number(precio_compra);
+const venta = Number(precio_venta);
+
+if (
+  !Number.isFinite(compra) ||
+  !Number.isFinite(venta) ||
+  compra < 0 ||
+  venta < 0
+) {
+  return NextResponse.json(
+    { error: "Los precios deben ser valores numéricos válidos y no negativos." },
+    { status: 400 }
+  );
+}
     const { data, error } = await supabase
       .from("dispositivos")
       .insert([
@@ -41,8 +79,8 @@ export async function POST(request: Request) {
     almacenamiento,
     color,
     estado,
-    precio_compra: Number(precio_compra),
-    precio_venta: Number(precio_venta),
+    precio_compra: compra,
+    precio_venta: venta,
     condicion,
   },
 ])

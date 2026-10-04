@@ -30,7 +30,7 @@ const router = useRouter();
 
   const registrar = async (e: React.FormEvent) => {
     e.preventDefault();
-
+    setMensaje("");
     const respuesta = await fetch("/api/dispositivos", {
       method: "POST",
       headers: {
@@ -38,7 +38,7 @@ const router = useRouter();
       },
       body: JSON.stringify(form),
     });
-
+    const resultado = await respuesta.json();
     if (respuesta.ok) {
       setMensaje("Dispositivo registrado correctamente");
      setForm({
@@ -53,7 +53,7 @@ const router = useRouter();
   condicion: "NUEVO",
 });
     } else {
-      setMensaje("Error al registrar el dispositivo");
+      setMensaje(resultado.error || "Error al registrar el dispositivo");
     }
   };
 
