@@ -73,6 +73,28 @@ if (authError || !user) {
     { status: 401 }
   );
 }
+  // A01 - Broken Access Control:
+// Verificar en el servidor que solo el administrador
+// pueda registrar nuevos dispositivos.
+const { data: usuarioRol, error: rolError } = await supabase
+  .from("usuarios")
+  .select("rol")
+  .eq("correo", user.email)
+  .single();
+
+if (rolError || !usuarioRol) {
+  return NextResponse.json(
+    { error: "No se pudo verificar el rol del usuario." },
+    { status: 403 }
+  );
+}
+
+if (usuarioRol.rol !== "administrador") {
+  return NextResponse.json(
+    { error: "Acceso denegado. Solo el administrador puede registrar dispositivos." },
+    { status: 403 }
+  );
+}
     const body = await request.json();
 
     const {
