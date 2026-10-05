@@ -50,6 +50,29 @@ export async function GET(request: Request) {
 }
 export async function POST(request: Request) {
   try {
+    // Verificar autenticación antes de permitir registrar dispositivos
+const authorization = request.headers.get("authorization");
+
+if (!authorization?.startsWith("Bearer ")) {
+  return NextResponse.json(
+    { error: "No autorizado. Se requiere autenticación." },
+    { status: 401 }
+  );
+}
+
+const token = authorization.substring(7);
+
+const {
+  data: { user },
+  error: authError,
+} = await supabase.auth.getUser(token);
+
+if (authError || !user) {
+  return NextResponse.json(
+    { error: "Sesión inválida o expirada." },
+    { status: 401 }
+  );
+}
     const body = await request.json();
 
     const {

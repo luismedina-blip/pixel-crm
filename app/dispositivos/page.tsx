@@ -31,9 +31,18 @@ const router = useRouter();
   const registrar = async (e: React.FormEvent) => {
     e.preventDefault();
     setMensaje("");
+    const { data: sessionData } = await supabase.auth.getSession();
+const token = sessionData.session?.access_token;
+
+if (!token) {
+  setMensaje("Sesión no válida. Inicia sesión nuevamente.");
+  router.push("/login");
+  return;
+}
     const respuesta = await fetch("/api/dispositivos", {
       method: "POST",
       headers: {
+      Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify(form),
