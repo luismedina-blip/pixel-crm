@@ -166,7 +166,7 @@ if (
 
     if (error) {
       return NextResponse.json(
-        { error: error.message },
+        { error: "No se pudo registrar el dispositivo." },
         { status: 500 }
       );
     }
@@ -174,7 +174,7 @@ if (
     return NextResponse.json(data, { status: 201 });
   } catch (error) {
     return NextResponse.json(
-      { error: String(error) },
+      { error: "Error interno del servidor." },
       { status: 500 }
     );
   }
