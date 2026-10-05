@@ -3,6 +3,30 @@ import { supabase } from "@/lib/supabase";
 
 export async function GET(request: NextRequest) {
   try {
+    // A07 - Fallas de autenticación:
+// Exigir una sesión válida antes de consultar datos del usuario.
+const authorization = request.headers.get("authorization");
+
+if (!authorization?.startsWith("Bearer ")) {
+  return NextResponse.json(
+    { error: "No autorizado. Se requiere autenticación." },
+    { status: 401 }
+  );
+}
+
+const token = authorization.substring(7);
+
+const {
+  data: { user },
+  error: authError,
+} = await supabase.auth.getUser(token);
+
+if (authError || !user) {
+  return NextResponse.json(
+    { error: "Sesión inválida o expirada." },
+    { status: 401 }
+  );
+}
     const { searchParams } = new URL(request.url);
     const correo = searchParams.get("correo");
 

@@ -32,9 +32,22 @@ export default function LoginPage() {
       }
 
       // 2. Consultar nuestro backend para obtener rol y estado
-      const respuesta = await fetch(
-        `/api/usuarios?correo=${encodeURIComponent(correo)}`
-      );
+      const {
+  data: { session },
+} = await supabase.auth.getSession();
+
+if (!session?.access_token) {
+  throw new Error("No se pudo obtener la sesión.");
+}
+
+const respuesta = await fetch(
+  `/api/usuarios?correo=${encodeURIComponent(correo)}`,
+  {
+    headers: {
+      Authorization: `Bearer ${session.access_token}`,
+    },
+  }
+);
 
       if (!respuesta.ok) {
         throw new Error("No se pudo consultar el usuario.");
