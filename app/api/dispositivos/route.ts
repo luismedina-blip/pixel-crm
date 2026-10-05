@@ -83,6 +83,9 @@ const { data: usuarioRol, error: rolError } = await supabase
   .single();
 
 if (rolError || !usuarioRol) {
+  console.warn(
+  `[SEGURIDAD][A09] Acceso denegado - usuario: ${user.email ?? "desconocido"}`
+);
   return NextResponse.json(
     { error: "No se pudo verificar el rol del usuario." },
     { status: 403 }
@@ -90,6 +93,9 @@ if (rolError || !usuarioRol) {
 }
 
 if (usuarioRol.rol !== "administrador") {
+  console.warn(
+  `[SEGURIDAD][A09] Intento de acceso sin permisos - usuario: ${user.email ?? "desconocido"}, rol: ${usuarioRol.rol}`
+);
   return NextResponse.json(
     { error: "Acceso denegado. Solo el administrador puede registrar dispositivos." },
     { status: 403 }
