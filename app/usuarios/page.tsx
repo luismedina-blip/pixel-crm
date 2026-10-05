@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { supabase } from "@/lib/supabase";
 
 type Usuario = {
   id: number;
@@ -25,20 +26,38 @@ useEffect(() => {
 }, [router]);
 
   useEffect(() => {
-    async function cargarUsuarios() {
-      try {
-        const respuesta = await fetch("/api/usuarios");
-        const datos = await respuesta.json();
-        setUsuarios(datos);
-      } catch (error) {
-        console.error("Error al cargar usuarios:", error);
-      } finally {
-        setCargando(false);
-      }
-    }
+  async function cargarUsuarios() {
+    try {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
 
-    cargarUsuarios();
-  }, []);
+      if (!session?.access_token) {
+        router.replace("/login");
+        return;
+      }
+
+      const respuesta = await fetch("/api/usuarios", {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      });
+
+      if (!respuesta.ok) {
+        throw new Error("No se pudieron cargar los usuarios.");
+      }
+
+      const datos = await respuesta.json();
+      setUsuarios(datos);
+    } catch (error) {
+      console.error("Error al cargar usuarios:", error);
+    } finally {
+      setCargando(false);
+    }
+  }
+
+  cargarUsuarios();
+}, [router]);
 
   return (
     <main className="min-h-screen bg-gray-100 p-8">
